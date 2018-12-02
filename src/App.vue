@@ -91,17 +91,17 @@
         <div class="col-lg-12 social"> 
             <ul>
               <li>
-                <a href="#" target="_blank">
+                <a href="https://medium.com/@discutio123" target="_blank">
                   <i class="fab fa-medium"></i> 
                 </a>
               </li>
               <li>
-                <a href="#" target="_blank">
+                <a href="https://discord.gg/EWKjZt3" target="_blank">
                    <i class="fab fa-discord"></i> 
                 </a>
               </li>
               <li style="margin-top:-4px;">
-                <a href="#" target="_blank">
+                <a href="https://steemit.com/@discutio" target="_blank">
                    <img src="/ste.jpg" width=35>
                 </a>
               </li>
@@ -111,7 +111,7 @@
                 </a>
               </li>
               <li>
-                <a href="#" target="_blank">
+                <a href="https://github.com/Discutio" target="_blank">
                   <i class="fab fa-github"></i> 
                 </a>
               </li>
