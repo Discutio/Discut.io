@@ -27,21 +27,23 @@ new Vue({
     hookPos() 
     {
       let h = 0;
+      let hook = $('.navbar-hook');
+      let nav = $(".navbar");
       
       $(window).scroll(function()
       {   
-        h = $('.navbar-hook').height() - 100;
+        h = hook.height() - 100;
         
         if(isNaN(h))
         {
-          return $(".navbar").addClass('navbar-active');    
+          return nav.addClass('navbar-active');    
         }
 
         if($(window).scrollTop() > h)
         {
-         $(".navbar").addClass('navbar-active');
+         nav.addClass('navbar-active');
         }else{
-         $(".navbar").removeClass('navbar-active');
+         nav.removeClass('navbar-active');
         }
       })
     }
