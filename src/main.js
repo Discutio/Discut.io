@@ -27,10 +27,6 @@ new Vue({
     hookPos() 
     {
       let h = 0;
-
-      $('.navbar-hook').bind("DOMSubtreeModified",function(){
-        console.log("changed");
-      });
       
       $(window).scroll(function()
       {   
