@@ -79,7 +79,7 @@ export default new Vuex.Store({
         app: 'discutio.app',
         callbackURL: 'http://localhost:8080/login',
         accessToken: this.state.steemToken,
-        scope: ['login', 'offline', 'vote', 'comment', 'delete_comment', 'comment_options', 'custom_json', 'claim_reward_balance'] 
+        scope: [] 
       });   
 
       if(localStorage.getItem('userObject'))
