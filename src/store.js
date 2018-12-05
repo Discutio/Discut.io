@@ -106,11 +106,7 @@ export default new Vuex.Store({
                    }   
                 } 
   
-                var d = new Date();
-                d.setHours(10);   
-  
-                localStorage.setItem('userObject', JSON.stringify({user: state.user, refresh: d}));   
-  
+                localStorage.setItem('userObject', JSON.stringify({user: state.user, refresh: new Date().setHours(10)}));   
                 state.loaded = true;
             }
           });
