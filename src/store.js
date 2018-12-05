@@ -77,7 +77,7 @@ export default new Vuex.Store({
   
       state.api = sc2.Initialize({  
         app: 'discutio.app',
-        callbackURL: 'http://localhost:8080/login',
+        callbackURL: 'https://discut.io/login',
         accessToken: this.state.steemToken,
         scope: [] 
       });   
