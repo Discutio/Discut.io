@@ -148,6 +148,8 @@ export default {
                   'avatar' : v.json_metadata.userImg, 
                   'slug' : v.permlink        
                 }
+                
+                      console.log(this.mostPopularDiscussion);
 
                 firstLoad = false;
                 return true;
@@ -192,7 +194,9 @@ export default {
                     'avatar' : v.json_metadata.userImg, 
                     'slug' : v.permlink        
                   }
-
+                  
+                  console.log(this.mostPopularDiscussion);
+                  
                   firstLoad = false;
                   return true;
                 }
