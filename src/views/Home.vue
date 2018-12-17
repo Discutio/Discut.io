@@ -136,7 +136,7 @@ export default {
                 return true;
               }
 
-              if(firstLoad && 0 === i)
+              if(firstLoad)
               {
                 this.mostPopularDiscussion = {
                   'title' : v.json_metadata.title,
@@ -182,7 +182,7 @@ export default {
                   return true;
                 }
 
-                if(firstLoad && 0 === i)
+                if(firstLoad)
                 {
                   this.mostPopularDiscussion = {
                     'title' : v.json_metadata.title,
