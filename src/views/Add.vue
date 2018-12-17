@@ -266,13 +266,13 @@ export default {
           'userImg': this.$store.state.user.avatar,
           'imgs': {'thumb': '','header': '','big': ''},  
           'tags': [  
+            'discutio',
             category,    
-            'debate',
             'discutio-' + category,
             'discutio-' + lang, 
           ],  
          'image':[this.item.img],
-         'app':"discutio/0.1",
+         'app':"discutio/0.2",
       };
    
       let data = {  
