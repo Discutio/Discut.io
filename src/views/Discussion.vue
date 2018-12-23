@@ -429,7 +429,7 @@
     <div class="problem-modal">
         <div class="header-img" :style="{ 'background-image': 'url(' + problem.img + ')' }"></div>
         <div class="desc">
-            <p>{{problem.description}}</p>
+            <p v-html="problem.description"></p>
         </div>
     </div>
   </modal>
