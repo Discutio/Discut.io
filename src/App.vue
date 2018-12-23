@@ -3,10 +3,12 @@
       <div class="container">
         <div class="row">
           <div class="col-lg-12">
-            <nav class="navbar navbar-expand-md navbar-dark fixed-top">
+            <nav class="navbar navbar-expand-md navbar-dark fixed-top"
+            :class="{'img-header': $store.getters.isTopic, 'navbar-active' : $store.getters.isMenuActive}"
+                 :style="{backgroundImage: 'url('+$store.getters.getTopicImg+')'}">
               <router-link class="navbar-brand" :to="{ name: 'home' }">
-                <img src="/logo.png" width=40 />
-              </router-link>  
+                <img src="/lw.png" width=40 />
+              </router-link>  <span class="beta">BETA</span>
               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
@@ -26,6 +28,11 @@
                     <router-link class="nav-link" :to="{ name: 'search' }">
                       <i class="fa fa-search"></i>
                     </router-link> 
+                  </li>
+                  <li class="nav-item" v-if="$store.getters.isTopic" style="padding-top: 2px;">
+                    <span class="topic-name">
+                        {{$store.getters.getTopicName}}
+                    </span>
                   </li>
                 </ul>
                 <ul class="navbar-nav mr-auto pull-right navbar-right">
@@ -106,8 +113,8 @@
                 </a>
               </li>
               <li>
-                <a href="#" target="_blank">
-                  <i class="fab fa-telegram"></i> 
+                <a href="https://twitter.com/@IoDiscut" target="_blank">
+                  <i class="fab fa-twitter"></i>
                 </a>
               </li>
               <li>
@@ -157,14 +164,10 @@
               <li v-if="!$store.state.steemToken"><a :href="$store.state.authUrl">Login</a></li>
               <li v-if="$store.state.steemToken"><a href="/logout">Logout</a></li>
               <li>
-                <router-link :to="{ name: 'meet'}">
-                    How can I earn money?
-                </router-link> 
+                <router-link :to="{ name: 'meet'}">How can I earn money?</router-link>
               </li>
               <li>
-                <router-link :to="{ name: 'meet'}">
-                    What is Blockchain Technology?
-                </router-link> 
+                <router-link :to="{ name: 'meet'}">What is Blockchain Technology?</router-link>
               </li>
             </ul>  
         </div>
@@ -197,20 +200,90 @@
       {  
         this.$store.commit('setVoteWeight', this.voteWeight);
         this.voteWeight = this.$store.state.voteWeight;
-      }  
-    },      
-    beforeCreate() 
-    {
-    }, 
-    mounted()
-    {/*
-      this.$nextTick(() => {
-        console.log(1);
-      });*/
-    }
+      }  ,
+        hookPos()
+        {
+            let h = 0;
+            let hook = $('.navbar-hook');
+            let nav = $(".navbar");
+
+            $(window).scroll(() =>
+            {
+                h = hook.height() - 100;
+
+                if(isNaN(h))
+                {
+                    return this.$store.dispatch('setMenuStatus', true);
+                }
+
+                if($(window).scrollTop() > h)
+                {
+                    this.$store.dispatch('setMenuStatus', true);
+                }else{
+                    this.$store.dispatch('setMenuStatus', false);
+                }
+            })
+        }
+    },
+      created: function () {
+          this.hookPos();
+      },
+      updated: function()
+      {
+
+      },
+      watch:
+          {
+
+          },
+      mounted()
+      {
+          this.hookPos();
+      }
   }
 </script>
 <style lang="scss">
+  .img-header {
+    background-size: cover;    box-shadow: inset 1px -200px 226px -48px rgba(0, 0, 0, 0.4);
+    background-image: url("http://i.huffpost.com/gen/782735/thumbs/o-MICHAEL-BAY-TRANSFORMERS-4-facebook.jpg");
+    background-size: cover;
+    background-position-y: -100px;
+    border-width: 0px !important;
+    .nav-link {
+      color: #fff !important;
+      &:hover {
+        color: #eee !important;
+      }
+    }
+    .nav-item.active > a {
+      color: #333 !important;
+      font-weight: bold !important;
+    }
+    .right-btn {
+      box-shadow: none !important;
+      &:hover {
+        color:#eee !important;
+        border-color:#eee !important;
+      }
+    }
+    .right-btn.user {
+      cursor:pointer !important;
+    }
+    .right-btn.clear {
+      color: #fff !important;
+      border-color: #fff !important;
+    }
+  }
+  .topic-name {
+    color: #fff;
+    padding-left: 20px;
+    border-left: 2px solid #fff;
+    font-size: 13px;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+
 .navbar-brand {
     margin-right: 30px !important;
 }
@@ -239,7 +312,6 @@
 }
 
 .navbar {
-    margin-top: 10px;
     transition: all .2s;
     border-width: 1px;
     color: transparent; 
@@ -789,5 +861,9 @@ footer {
   }
 }
 
+  .beta {
+    background-color:#fff;color:#409805;
+    position:absolute;margin-left:25px;font-size:9px;padding:1px 5px;border-radius:20px;margin-top:3px;
+  }
 
 </style>

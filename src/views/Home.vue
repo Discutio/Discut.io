@@ -1,8 +1,7 @@
 <template>
 <div>
         <div class="header navbar-hook" :style="{'background-image':'url('+mostPopularDiscussion.img+')'}">
-        <div class="shadow-inset"></div>  
-
+              <div class="shadow-inset"></div>
               <div class="top-thread">
                 <p>{{tip}}</p> 
                 <h1>{{mostPopularDiscussion.title}}</h1>
@@ -131,7 +130,7 @@ export default {
             {
               v.json_metadata = JSON.parse(v.json_metadata);
 
-              if(typeof v.json_metadata.type == "undefined")
+              if(typeof v.json_metadata.type == "undefined" || v.body_length < 90)
               {
                 return true;
               }
@@ -223,8 +222,11 @@ export default {
     }
   },
   mounted()
-  {  
-    $(".navbar").removeClass('navbar-active');
+  {
+      this.$store.dispatch('setTopicMode', {mode: false, name: ""});
+      $(".navbar").removeClass("img-header");
+      $(".navbar").removeClass('navbar-active');
+
     let items = [
       'A one question...',
       'Did you think about...',

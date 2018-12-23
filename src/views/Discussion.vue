@@ -3,24 +3,7 @@
   <div class="navbar-hook">
   </div>
   <div class="topic">
-    <div class="content page white">
-        <div class="container" v-if="item.title">
-            <div class="row">
-                <div class="offset-2 col-lg-1 img">
-                    <img :src="item.image">
-                </div>   
-                <div class="col-lg-7 title">
-                    <h1>{{item.title}}</h1>
-                    <span class="background" @click="$modal.show('problem-introduce')">
-                        <i class="fas fa-external-link-alt"></i> Background of the Problem
-                    </span>
-                    <span class="background" @click="(mapOpened ? mapOpened = false : mapOpened = true)">
-                        <i class="far fa-map"></i> <span v-if="mapOpened"> Hide</span> 
-                        <span v-else-if="!mapOpened"> Show</span> discussion map
-                    </span>
-                </div>
-            </div>
-        </div>   
+    <div class="content page white" style="padding-top:0px;">
         <div class="container" v-if="!item.title">
             <div class="row">
                 <div class="col-lg-12 title loader">
@@ -31,6 +14,27 @@
     </div>
     <div class="content main" v-if="item.title">
         <div class="container">
+            <div class="row">
+                <div class="offset-1 col-lg-10">
+                    <div class="settings-panel" :class="{'map-opened' : !mapOpened}">
+                        <span class="btn-action" @click="$modal.show('problem-introduce')">
+                            <i class="fas fa-external-link-alt"></i> Background of the Problem
+                        </span>
+                        <span class="btn-action borders" @click="(mapOpened ? mapOpened = false : mapOpened = true)">
+                            <i class="far fa-map"></i> <span v-if="mapOpened"> Hide</span>
+                            <span v-else-if="!mapOpened"> Show</span> discussion map
+                        </span>
+                        <span class="btn-action borders" v-if="!busyReSteem" @click="reBlog">
+                            <i class="fa fa-retweet" aria-hidden="true"></i> Resteem
+                        </span>
+                        <span class="btn-action borders" v-if="busyReSteem">
+                            <i class="fa fa-spin fa-spinner" aria-hidden="true"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container" style="position:relative;">
             <div class="row" v-if="mapOpened">
                 <div class="col-lg-12">
                     <div style="" class="map">
@@ -56,7 +60,7 @@
             <div class="row">
                 <div class="col-lg-10 offset-1">
                     <div class="row">
-                        <div class="col-lg-12"> 
+                        <div class="col-lg-12">
                             <div class="_main-box">
                                 <div class="main-box">  
                                     <div class="back" v-if="'origin' !== current.type">
@@ -64,7 +68,7 @@
                                             <i class="fas fa-long-arrow-alt-left"></i> Back
                                         </span> 
                                     </div>
-                                    <h2>{{current.desc}}</h2>    
+                                    <h2 v-html="current.desc"></h2>
                                     <div class="details"> 
                                         <div class="rewardHover" :class="{'active': current.rewardHover}" 
                                         @mouseleave="current.rewardHover = false"> 
@@ -105,6 +109,64 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col-lg-12 non-directly" v-if="'origin' === current.type">
+                            <div class="_main-box" v-if="nonDirectly.length" :class="{'panel' : nonDirectlyOpen}">
+                                <div class="main-box">
+                                    <div class="row">
+                                        <div class="col-lg-1">
+                                            <div @click="(nonDirectlyOpen ? nonDirectlyOpen = false : nonDirectlyOpen= true)"
+                                                    class="directly-open">
+                                                <span v-if="!nonDirectlyOpen">
+                                                    <p style="margin: 0;">Show</p>
+                                                    <i class="fa fa-arrow-down"></i>
+                                                </span>
+                                                <span v-if="nonDirectlyOpen">
+                                                    <p style="margin: 0;">Hide</p>
+                                                    <i class="fa fa-arrow-up"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <h2 style="    margin-left: -5px;">
+                                                This discussion has
+                                                <strong>{{nonDirectly.length}}</strong>
+                                                non-directly replies
+                                            </h2>
+                                            <p style="margin-bottom:0;">
+                                                <a :href="'https://steemit.com/@'+nonDirectly[0].author"
+                                                   target="_blank"
+                                                   title="Show profile">{{nonDirectly[0].author}}</a> and {{nonDirectly.length-1}} other Steemians
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="list">
+                                <div class="_main-box" v-if="nonDirectly.length&&nonDirectlyOpen"
+                                     v-for="comment in nonDirectly">
+                                    <div class="main-box">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h2 style="font-weight: normal;">
+                                                    {{comment.body}}
+                                                </h2>
+                                                <div class="details">
+                                                    <div>
+                                                    <span style="font-weight: normal;">
+                                                        by {{comment.author}}
+                                                        <span class="reward">
+                                                            ${{parseFloat(comment.pending_payout_value.split(" ")[0]).toFixed(2)}}
+                                                        </span>
+                                                    </span>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-lg-6">
                             <div class="_main-box">
                                 <div class="main-box pros">
@@ -130,24 +192,23 @@
                             <div v-for="item in prosComments" class="_main-box">
                                 <div class="main-box" :class="{'weight': item.replies.length > 0}">
                                     <div>
-                                        <span @click="changeCurrent(item)" class="comment-title">
-                                            {{item.desc}}
+                                        <span @click="changeCurrent(item)" class="comment-title"  v-html="item.desc">
                                         </span>
                                     </div>
-                                    <div class="details"> 
+                                    <div class="details">
                                         <div class="rewardHover" :class="{active: item.rewardHover}" @mouseleave="item.rewardHover = false">
                                             <div @click="voteComment(item)">
-                                                <i 
+                                                <i
                                                 :class="{
-                                                    'far': (!item.busyVote&&!item.isVoter), 
-                                                    'fas': (!item.busyVote&&item.isVoter)||item.busyVote, 
+                                                    'far': (!item.busyVote&&!item.isVoter),
+                                                    'fas': (!item.busyVote&&item.isVoter)||item.busyVote,
                                                     'fa-star': !item.busyVote,
-                                                    'fa-spinner': item.busyVote, 
+                                                    'fa-spinner': item.busyVote,
                                                     'fa-spin': item.busyVote
                                                     }"></i> {{item.isVoter?'-1':'+1'}} Vote
                                             </div>
-                                        </div> 
-                    
+                                        </div>
+
                                         <div>
                                             <span @mouseover="showRewardPanel(item)">
                                                 <i v-for="star in item.stars"
@@ -157,24 +218,24 @@
                                                     'fas fa-star-half-alt': (star === 'half'),
                                                     }">
                                                 </i>
-    
+
                                                 <span class="reward">${{item.reward}}</span>
                                             </span>
 
-                                            <div class="pull-right">      
+                                            <div class="pull-right">
                                                 <a :href="'https://steemit.com/@' + item.author" target="_blank" title="Show profile">
-                                                    <img :src="item.avatar"> 
+                                                    <img :src="item.avatar">
                                                     {{item.author}}
-                                                </a> 
+                                                </a>
                                             </div>
                                         </div>
-                                    </div> 
+                                    </div>
                                 </div>
-                                <div class="replies" 
-                                    v-if="item.replies.length > 0" 
+                                <div class="replies"
+                                    v-if="item.replies.length > 0"
                                     v-tooltip="{ content: item.repliesPros+' pros, '+item.repliesCons+' cons ('+item.repliesWeight+')' }">
-                             
-                                    <span v-for="(reply, k) in item.replies" v-if="k <= 12" class="reply" 
+
+                                    <span v-for="(reply, k) in item.replies" v-if="k <= 12" class="reply"
                                     :class="{'cons': reply.type == 'cons', 'pros': reply.type == 'pros'}">
                                     </span>
                                     <span v-if="item.replies.length > 12" class="reply">
@@ -208,8 +269,7 @@
                             <div class="_main-box" v-for="item in consComments">
                                 <div class="main-box">
                                     <div>
-                                        <span @click="changeCurrent(item)" class="comment-title">
-                                            {{item.desc}}
+                                        <span @click="changeCurrent(item)" class="comment-title" v-html="item.desc">
                                         </span>
                                     </div>
                                     <div class="details"> 
@@ -267,31 +327,107 @@
     </div>
   </div>
   <modal name="add-pros-or-cons">
-    <div class="add">
-        <div class="type">  
-           <h2>You're adding 
-               <span @click="('pros' === add.type? add.type = 'cons' : add.type = 'pros')" :class="{'cons': 'cons' === add.type, 'pros': 'pros' === add.type}"> {{('cons' === add.type ? 'Cons' : 'Pros')}} <i class="fas fa-sync"></i>
-               </span> 
-               as <img v-if="$store.state.user.avatar" :src="$store.state.user.avatar" width=20 class="rounded-circle"/>
-                        {{$store.state.user.user}} 
-           </h2> 
-        </div>  
-        <div>
-            <textarea rows="4" class="form-control" v-model="add.desc" :disabled="busy"></textarea>
+        <div class="add">
+            <div class="type">
+               <h2>You're adding
+                   <span @click="('pros' === add.type? add.type = 'cons' : add.type = 'pros')" :class="{'cons': 'cons' === add.type, 'pros': 'pros' === add.type}"> {{('cons' === add.type ? 'Cons' : 'Pros')}} <i class="fas fa-sync"></i>
+                   </span>
+                   as <img v-if="$store.state.user.avatar" :src="$store.state.user.avatar" width=20 class="rounded-circle"/>
+                            {{$store.state.user.user}}
+               </h2>
+            </div>
+            <div>
+                <div class="editor">
+                    <editor-menu-bar :editor="editor">
+                        <div class="menubar" slot-scope="{ commands, isActive }">
+                            <i class="fa fa-strikethrough"
+                               aria-hidden="true"
+                               :class="{ 'is-active': isActive.strike() }"
+                               @click="commands.strike"></i>
+
+                            <i class="fa fa-underline"
+                               aria-hidden="true"
+                               :class="{ 'is-active': isActive.underline() }"
+                               @click="commands.underline"></i>
+
+                            <i class="fa fa-code"
+                               aria-hidden="true"
+                               :class="{ 'is-active': isActive.code() }"
+                               @click="commands.code"></i>
+
+                            <i class="fa fa-paragraph"
+                               aria-hidden="true"
+                               :class="{ 'is-active': isActive.paragraph() }"
+                               @click="commands.paragraph"></i>
+
+                            <i class="fa fa-list-ul"
+                               aria-hidden="true"
+                               :class="{ 'is-active': isActive.bullet_list() }"
+                               @click="commands.bullet_list"></i>
+
+                            <i class="fa fa-list-ol"
+                               aria-hidden="true"
+                               :class="{ 'is-active': isActive.ordered_list() }"
+                               @click="commands.ordered_list"></i>
+
+                            <i class="fa fa-quote-right"
+                               aria-hidden="true"
+                               :class="{ 'is-active': isActive.blockquote() }"
+                               @click="commands.blockquote"></i>
+
+                            <i class="fa fa-undo"
+                               aria-hidden="true"
+                               @click="commands.undo"></i>
+
+                            <i class="fa fa-redo"
+                               aria-hidden="true"
+                               @click="commands.redo"></i>
+                        </div>
+                    </editor-menu-bar>
+                    <editor-menu-bubble class="menububble" :editor="editor">
+                        <div
+                                slot-scope="{ commands, isActive, getMarkAttrs, menu }"
+                                class="menububble"
+                                :class="{ 'is-active': menu.isActive }"
+                                :style="`left: ${menu.left}px; bottom: ${menu.bottom}px;`"
+                        >
+
+                            <form class="menububble__form" v-if="linkMenuIsActive" @submit.prevent="setLinkUrl(commands.link, linkUrl)">
+                                <input class="menububble__input" type="text" v-model="linkUrl" placeholder="https://" ref="linkInput" @keydown.esc="hideLinkMenu"/>
+                                <button class="menububble__button" @click="setLinkUrl(commands.link, null)" type="button">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </form>
+
+                            <template v-else>
+                                <button
+                                        class="menububble__button"
+                                        @click="showLinkMenu(getMarkAttrs('link'))"
+                                        :class="{ 'is-active': isActive.link() }"
+                                >
+                                    <span>Add Link</span>
+                                    <i class="fa fa-link"></i>
+                                </button>
+                            </template>
+
+                        </div>
+                    </editor-menu-bubble>
+                    <editor-content class="editor__content" :editor="editor" v-model="add.desc" :disabled="busy" />
+                </div>
+            </div>
+                 <div class="submit">
+                          <button v-if="!busy" @click="addComment" class="btn btn-confirm">
+                            Add
+                          </button>
+                          <button v-else-if="busy" class="btn btn-confirm">
+                            <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+                          </button>
+                 </div>
         </div>
-             <div class="submit">
-                      <button v-if="!busy" @click="addComment" class="btn btn-confirm">
-                        Add
-                      </button>
-                      <button v-else-if="busy" class="btn btn-confirm">
-                        <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
-                      </button>  
-                  </div>
-    </div>
   </modal>
   <modal name="problem-introduce" height="auto">
     <div class="problem-modal">
-        <div class="header-img" :style="{ 'background-image': 'url(' + current.image + ')' }"></div>
+        <div class="header-img" :style="{ 'background-image': 'url(' + problem.img + ')' }"></div>
         <div class="desc">
             <p>{{problem.description}}</p>
         </div>
@@ -306,6 +442,26 @@
     import axios from 'axios';
     import Snotify from 'vue-snotify';
     import Tooltip from 'vue-directive-tooltip';
+    import { Editor, EditorContent, EditorMenuBar, EditorMenuBubble } from 'tiptap'
+    import {
+        Blockquote,
+        CodeBlock,
+        HardBreak,
+        Heading,
+        OrderedList,
+        BulletList,
+        ListItem,
+        TodoItem,
+        TodoList,
+        Bold,
+        Code,
+        Italic,
+        Link,
+        Strike,
+        Underline,
+        History,
+        Placeholder
+    } from 'tiptap-extensions'
       
     import 'vue-directive-tooltip/css/index.css';
     import "vue-snotify/styles/material.css";
@@ -317,9 +473,24 @@
     export default {
         name: 'discussion',
         methods: {
+            showLinkMenu(attrs) {
+                this.linkUrl = attrs.href
+                this.linkMenuIsActive = true
+                this.$nextTick(() => {
+                    this.$refs.linkInput.focus()
+                })
+            },
+            hideLinkMenu() {
+                this.linkUrl = null
+                this.linkMenuIsActive = false
+            },
+            setLinkUrl(command, url) {
+                command({ href: url })
+                this.hideLinkMenu()
+                this.editor.focus()
+            },
             showRewardPanel: function(item)
             {
-                console.log("s");
                 item.rewardHover = true; 
             },
             drawLine: function(column, point, isActive, position)
@@ -345,8 +516,8 @@
                 this.$store.state.api.vote(
                     this.$store.state.user.name, 
                     item.author, 
-                    item.permlink, 
-                    weight, 
+                    item.permlink,
+                    weight,
                 (err, res) => {   
                     item.busyVote = false;
 
@@ -365,6 +536,31 @@
                     item.isVoter = true;
                     this.$snotify.success('Vote added', 'Success!');
                 });  
+            },
+            reBlog: function()
+            {
+                if(this.busyReSteem)
+                {
+                    return;
+                }
+
+                this.busyReSteem = true;
+
+                this.$store.state.api.reblog(
+                    this.$store.state.user.name,
+                    this.problem.author,
+                    this.problem.perm,
+                    (err, res) => {
+                        this.busyReSteem = false;
+
+                        if(err)
+                        {
+                            this.$snotify.error('Something went wrong, try again for a minute', 'Fail');
+                            return;
+                        }
+
+                        this.$snotify.success('Discussion has reblogged', 'Success');
+                    });
             },
             addPros: function()
             {
@@ -409,7 +605,6 @@
             },
             getComments: function(url, oldUrl = "", back = false)
             {
-                console.log("getComments Init"); 
                 let result = this.state.content;
                 let username = this.$store.state.user.name;
                 let v = [];
@@ -418,9 +613,6 @@
                 let replies = result[elementIndex].replies;
 
                 let _replies = [];
-
-                console.log("url: "+url);
-                console.log(replies);     
 
                 if(this.problem.url === url)
                 {
@@ -523,9 +715,6 @@
                     }
 
                     let obj = v.json_metadata
-
-                    console.log(v);
-                    console.log(obj);
 
                     if (typeof obj === 'string' || obj instanceof String)
                     {
@@ -719,10 +908,12 @@
             {
                 let errors = [];
 
-                if(!this.add.desc)
+                if($(".ProseMirror > p").hasClass("is-empty"))
                 {
                     errors.push("Without comment content? Type something :)");
                 }
+
+                let desc = $(".ProseMirror").html();
 
                 if(errors.length>0)
                     { 
@@ -743,48 +934,49 @@
 
                 let meta = {
                     type: this.add.type,
-                    desc: this.add.desc, 
+                    desc: desc,
                     userImg: this.$store.state.user.avatar
-                }
+                };
 
                 let author = this.$store.state.user.name;
                 let perm = Math.random().toString(36).substring(2);
 
-                let data = {  
+                let data = {
                     operations: 
                     [   
                         [
                             "comment",
                             {
                                 author: author,     
-                                body: meta.desc, 
+                                body:
+                                meta.desc+" <p class='__dfooter'><sub>Posted via <a href='https://discut.io'>Discut.io</a>, debates without censorship!</sub></p>",
                                 json_metadata: JSON.stringify(meta),
                                 parent_author: this.current.author,  
                                 parent_permlink: this.current.permlink,
                                 permlink: perm,
-                                title: meta.desc   
-                            } 
+                                title: "Reply"
+                            }
                         ],
                         [
-                        "comment_options",
-                        {
-                            allow_curation_rewards: true,
-                            allow_votes: true,   
-                            author: author, 
-                            max_accepted_payout: "1000000.000 SBD",
-                            percent_steem_dollars: 10000,
-                            permlink: perm,
-                            extensions: [
-                            [
-                                0,
-                                {
-                                    beneficiaries: [   
-                                        {account: "discutio", weight: 1000}
-                                    ]  
-                                }     
-                            ]
-                            ]
-                        }  
+                            "comment_options",
+                            {
+                                allow_curation_rewards: true,
+                                allow_votes: true,
+                                author: author,
+                                max_accepted_payout: "1000000.000 SBD",
+                                percent_steem_dollars: 10000,
+                                permlink: perm,
+                                extensions: [
+                                    [
+                                        0,
+                                        {
+                                            beneficiaries: [
+                                                {account: "discutio", weight: 1000}
+                                            ]
+                                        }
+                                    ]
+                                ]
+                            }
                         ]
                     ]
                 };
@@ -843,6 +1035,32 @@
         },
         data() {
             return {
+                linkUrl: null,
+                linkMenuIsActive: false,
+                editor: new Editor({
+                    extensions: [
+                        new Blockquote(),
+                        new BulletList(),
+                        new CodeBlock(),
+                        new HardBreak(),
+                        new Heading({ levels: [1, 2, 3] }),
+                        new ListItem(),
+                        new OrderedList(),
+                        new TodoItem(),
+                        new TodoList(),
+                        new Bold(),
+                        new Code(),
+                        new Italic(),
+                        new Link(),
+                        new Strike(),
+                        new Underline(),
+                        new History(),
+                        new Placeholder({
+                            emptyClass: 'is-empty',
+                            emptyNodeText: 'Write something…',
+                        }),
+                    ],
+                }),
                 state: {},
                 add: {
                     type: '',
@@ -871,7 +1089,7 @@
                     img: '',
                     rewardHover: false,
                     isVoter: false,
-                    busyVote: false
+                    busyVote: false,
                 },
                 history: [], 
                 currentComments: [],
@@ -880,7 +1098,10 @@
                 forOneStar: 0,
                 problem: {
                     title: "",
-                    description: ""
+                    description: "",
+                    img: "",
+                    author: "",
+                    perm: ""
                 },
                 map: {
                     left: [],
@@ -889,14 +1110,23 @@
                 },
                 commentsMap: [],
                 mapWay: "-",
-                mapOpened: true
+                mapOpened: true,
+                nonDirectly: [],
+                nonDirectlyOpen: false,
+                busyReSteem: false
             }
         },
-        watch: {}, 
-        components: {VModal}, 
+        watch: {},
+        components: {
+            VModal,
+            EditorContent,
+            EditorMenuBar,
+            EditorMenuBubble,
+        },
         mounted() 
-        { 
-            $(".navbar").addClass('navbar-active');
+        {
+            this.$store.dispatch('setMenuStatus', false);
+
             let refresh = setInterval(() =>
             {
                 if(this.$store.state.loaded)
@@ -920,13 +1150,20 @@
                                 this.problem.title = obj.title;
                                 this.problem.description = obj.description;
                                 this.problem.url = result.author+"/"+result.permlink;
-     
+                                this.problem.img = obj.image[0];
+                                this.problem.author = result.author;
+                                this.problem.perm = result.permlink;
+
+                                this.$store.dispatch('setTopicMode', {mode: true, name: obj.title, img: obj.image[0]});
+                                document.title = "Discut.io - " + obj.title;
+                                $(".navbar").removeClass('navbar-active');
+
                                 this.item.result = result;
                                 this.item.title = obj.title;
                                 this.item.desc = obj.description;
                                 this.item.category = obj.category.charAt(0).toUpperCase() + obj.category.slice(1);
                                 this.item.url = this.problem.url;
-                                this.item.image = obj.image;
+                                this.item.image = obj.image[0];
                                 this.item.reward = parseFloat(result.pending_payout_value.split(" ")[0]).toFixed(2);
                                 this.item.rewardHover = false;
                                 this.item.busyVote = false;
@@ -961,8 +1198,9 @@
                                 };
 
                                 let bestReward = 0;
+                                let bestRewardWithoutTopic = 0;
 
-                                bestReward = parseFloat(result.pending_payout_value.split(" ")[0]).toFixed(2)
+                                bestReward = parseFloat(result.pending_payout_value.split(" ")[0]).toFixed(2);
 
                                 this.current.reward = bestReward;
                                 this.item.reward = bestReward;
@@ -971,7 +1209,6 @@
                                 { 
                                     if(!err) 
                                     {
-
                                         $.each(_result.content, (i, v) =>
                                         {
                                             if(typeof v === 'string')
@@ -982,7 +1219,8 @@
                                             let obj = JSON.parse(v.json_metadata);
 
                                             if(typeof obj.type == 'undefined')
-                                            {  
+                                            {
+                                                this.nonDirectly.push(v);
                                                 return true;
                                             }  
     
@@ -998,10 +1236,25 @@
                                             {
                                                 bestReward = _result.content[i].reward;
                                             }
+
+                                            if(_result.content[i].reward > bestRewardWithoutTopic)
+                                            {
+                                                if(this.problem.url === v.author + "/" + v.permlink)
+                                                {
+                                                    return true;
+                                                }
+
+                                                bestRewardWithoutTopic = _result.content[i].reward;
+                                            }
                                         });  
 
                                         this.bestReward = bestReward;
                                         this.forOneStar = bestReward/5;
+
+                                        bestRewardWithoutTopic = bestRewardWithoutTopic/5;
+
+                                        console.log(bestReward/5);
+                                        console.log(bestRewardWithoutTopic);
 
                                         let currentStars = [];
                                         let stringStars = "";
@@ -1015,8 +1268,8 @@
                                             }
 
                                             currentStars = [];
-                                        
-                                            stringStars = (_result.content[i].reward / this.forOneStar).toFixed(1).split(".");
+
+                                            stringStars = (_result.content[i].reward / bestRewardWithoutTopic).toFixed(1).split(".");
 
                                             for(let star = 0; star < 5; star++)
                                             {
@@ -1069,6 +1322,7 @@
                                         this.history.push(Object.assign({}, this.current));
 
                                         this.getComments(this.current.url, this.current.url);
+                                        console.log(this.nonDirectly);
                                     }
                                 }); 
 
@@ -1082,13 +1336,108 @@
                     clearTimeout(refresh);      
                 }
                 
-            }, 1000);        
+            }, 1000);
         }      
     }
 </script> 
 <style lang="scss">
+    .editor {
+        margin: 10px 0;
+        .menubar {
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            i {
+                margin-right: 10px;
+            }
+        }
+        .editor__content {
+            padding-top: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+    }
+    .ProseMirror {
+        height: 130px;
+        overflow-y: scroll;
+        p {
+            color: #616770;
+        }
+    }
+    .ProseMirror-focused {
+        outline: 0;
+    }
+    .non-directly {
+        .panel {
+            margin-bottom: 0 !important;
+        }
+        .directly-open {
+            text-align: center;
+            cursor: pointer;
+        }
+        .list {
+            padding: 0 20px;
+            ._main-box {
+                margin-bottom: 0;
+                .main-box {
+                    border-radius :0;
+                    border-bottom-width: 0px;
+                }
+                &:first-child {
+                    .main-box {
+                        border-top-width: 0px;
+                        -webkit-box-shadow: inset 0px 37px 48px -42px rgba(0,0,0,0.1);
+                        -moz-box-shadow: inset 0px 37px 48px -42px rgba(0,0,0,0.1);
+                        box-shadow: inset 0px 37px 48px -42px rgba(0,0,0,0.1);
+                    }
+                }
+                &:last-child {
+                    .main-box {
+                        border-bottom-left-radius: 5px;
+                        border-bottom-right-radius: 5px;
+                        border-bottom-width: 1px;
+                    }
+                    margin-bottom: 30px;
+                }
+            }
+        }
+    }
+    .btn-action {
+        background-color: #409805;
+        border: 1px solid #409805;
+        color:#fff;
+        padding: 3px 5px;
+        border-radius: 5px;
+        font-size: 11px;
+        margin-right: 10px;
+        cursor: pointer;
+        &.borders {
+            border: 1px solid #616770;
+            opacity: 1;
+            background-color: transparent;
+            color: #616770;
+        }
+    }
+    .background-btn {
+        color: #616770;
+        font-size: 13px;
+        border: 1px solid #616770;
+        border-radius: 5px;
+        padding: 3px 8px;
+        cursor: pointer;
+        margin-right: 10px;
+    }
     .content.main {
         padding-top: 30px;
+    }
+    .settings-panel {
+        padding-top:15px;
+        border-bottom:1px solid #eee;
+        font-size: 12px;
+        color: #616770;
+        padding-bottom:15px;
+        &.map-opened {
+            border: none;
+        }
     }
     .map {
         display: -webkit-box;
@@ -1109,6 +1458,7 @@
         -webkit-justify-content: center;
         justify-content: center;
         margin-bottom: 30px;
+        margin-top: 30px;
         .col-map {
             float: left;
             margin-right: 20px;
@@ -1139,7 +1489,7 @@
         }  
     }
     .map > .col-map:first-child {
-        margin-left: -20px;
+        margin-left: 20px;
     } 
     .submit {
         margin-top: 20px;
@@ -1221,15 +1571,6 @@
         .title {
             padding-left: 25px;
         }
-        .background {
-            color: #616770;
-            font-size: 13px;
-            border: 1px solid #616770;
-            border-radius: 5px;
-            padding: 3px 8px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
         .title > h1 {
             color: #333;
             margin-bottom: 10px;
@@ -1239,7 +1580,7 @@
         }
         .title.loader {      
             text-align: center;
-            margin-top: 35px;
+            margin-top: 160px;
             .lds-ring {
                 width: 60px;
                 height: 60px; 
@@ -1263,8 +1604,10 @@
         {
             margin-bottom: 20px;
             .replies {
-                margin-left: 20px;
-                margin-top: -15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-top: -13px;
                 .reply {
                     color: #616770;
                     font-size: 13px;
@@ -1275,6 +1618,8 @@
                     border: 1px solid #ddd;
                     opacity: 0.8;
                     margin-left: -8px;
+                    width: 10px;
+                    height: 20px;
                     &.pros {
                         border-bottom:2px solid #149543;
                     }
@@ -1398,6 +1743,7 @@
                 img {
                     margin-right: 0px;
                     width: 17px;
+                    height: 17px;
                     border-radius: 40px;
                     opacity: 1;
                 }
@@ -1470,4 +1816,55 @@
       .connection-border-bottom span {
          bottom: 1em;
       }
+    .editor p.is-empty:first-child::before {
+        content: attr(data-empty-text);
+        float: left;
+        color: #aaa;
+        pointer-events: none;
+        height: 0;
+        font-style: italic;
+    }
+    .menububble.is-active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .menububble {
+        position: absolute;
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        z-index: 20;
+        background: #000;
+        border-radius: 5px;
+        padding: .3rem;
+        margin-bottom: .5rem;
+        -webkit-transform: translateX(-50%);
+        -ms-transform: translateX(-50%);
+        transform: translateX(-50%);
+        visibility: hidden;
+        opacity: 0;
+        -webkit-transition: opacity .2s,visibility .2s;
+        transition: opacity .2s,visibility .2s;
+    }
+    .menububble__button:last-child {
+        margin-right: 0;
+    }
+    .menububble__button {
+        display: -webkit-inline-box;
+        display: -ms-inline-flexbox;
+        display: inline-flex;
+        background: rgba(0,0,0,0);
+        border: 0;
+        color: #fff;
+        padding: .2rem .5rem;
+        margin-right: .2rem;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+    .menububble__input {
+        font: inherit;
+        border: none;
+        background: rgba(0,0,0,0);
+        color: #fff;
+    }
 </style>

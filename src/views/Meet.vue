@@ -96,8 +96,9 @@ export default {
   methods: {
   },
   mounted()
-  {  
-    $(".navbar").addClass('navbar-active');
+  {
+      this.$store.dispatch('setTopicMode', {mode: false, name: ""});
+      this.$store.dispatch('setMenuStatus', true);
   }
 }
 </script>

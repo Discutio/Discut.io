@@ -138,12 +138,13 @@ export default {
     }
   },
   mounted()
-  {  
-    this.item.name = this.$route.params.tag;
-    this.item.steemName = 'discutio-' + this.item.name;
+  {
+      this.$store.dispatch('setTopicMode', {mode: false, name: ""});
+        this.item.name = this.$route.params.tag;
+        this.item.steemName = 'discutio-' + this.item.name;
 
-    this.loadContent('new', this.item.steemName);
-    $(".navbar").addClass('navbar-active');
+        this.loadContent('new', this.item.steemName);
+      this.$store.dispatch('setMenuStatus', true);
   }
 }
 </script>

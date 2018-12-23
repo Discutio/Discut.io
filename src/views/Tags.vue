@@ -60,10 +60,11 @@ export default {
   methods: {
   },
   mounted()
-  {  
+  {
+      this.$store.dispatch('setTopicMode', {mode: false, name: ""});
+      this.$store.dispatch('setMenuStatus', true);
       this.tags = this.$store.state.categories;
       this.busy = false;
-      $(".navbar").addClass('navbar-active');
   }
 }
 </script>
