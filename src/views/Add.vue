@@ -6,6 +6,15 @@
       <div class="container">
           <div class="row" v-if="$store.state.steemToken">
               <div class="col-lg-5 offset-1">
+                  <div>
+                      <div class="toggle">
+                          <input type="radio" name="sizeBy" value="discussion" v-model="type" id="sizeWeight"
+                                 checked="checked" />
+                          <label for="sizeWeight">Discussion</label>
+                          <input type="radio" name="sizeBy" value="poll" v-model="type" id="sizeDimensions" />
+                          <label for="sizeDimensions"><i class="far fa-chart-bar"></i> Poll</label>
+                      </div>
+                  </div>
                   <div class="form-group">
                     <label for="usr">Title</label>
                     <input type="text" class="form-control" :disabled="busy" v-model="item.title">
@@ -90,12 +99,26 @@
                           <editor-content class="editor__content" :editor="editor" />
                       </div>
                   </div>
+                  <div class="form-group" v-if="type === 'poll'">
+                      <label><i class="far fa-chart-bar"></i> Options</label>
+                      <div v-for="(item, index) in choices" style="margin-bottom: 20px;">
+                          <input type="text" class="form-control" v-model="item.title"
+                                 :placeholder="(index+1)+'. option'">
+                          <textarea style="margin-top: 10px;" v-model="item.desc" class="form-control"
+                                     placeholder="About this option"></textarea>
+                      </div>
+                      <div>
+                          <button class="btn btn-confirm" @click="choices.push({title: '', desc: ''})">
+                              <i class="far fa-chart-bar"></i> Add next option
+                          </button>
+                      </div>
+                  </div>
                   <div class="form-group">
-                    <label for="usr">URL to image</label>
+                    <label>URL to image</label>
                      <input type="text" :disabled="busy" class="form-control" v-model="item.img">
                   </div>
                   <div class="form-group">
-                    <label for="usr">Category</label>
+                    <label>Category</label>
                     <input type="text" :disabled="busy" class="form-control" v-model="item.category">
                   </div>
                   <div> 
@@ -141,8 +164,11 @@
                   </div>
               </div>
               <div class="col-lg-4 block-desc">
-                 <h1>Create new discussion</h1>
-                 <p>Your discussion preview:
+                 <h1>Welcome in creator!</h1>
+                 <p>
+                     You're adding
+                     <strong>{{type}}</strong>
+                     now. Preview:
                  </p>
                  <div class="row">
                     <div class="col-lg-9">
@@ -150,7 +176,9 @@
                           <div class="self-img" :style="{ backgroundImage: 'url(' + item.img + ')' }">
                             <div class="shadow-inset"></div>
                             <div class="self">
-                              <a href="#" class="tag">{{item.category}}</a>
+                                <a href="#" class="tag">{{item.category}}</a>
+                                <a href="#" class="tag" v-if="type === 'poll'"
+                                   title="Poll"><i class="far fa-chart-bar"></i></a>
                             </div>
                             <div class="action">
                               <h2>{{item.title}}</h2> 
@@ -258,13 +286,13 @@ export default {
             }),
           busy: false,
           default: {
-              title : 'I want a start discussion about...',
+              title : 'Your title, not longer than 256 chars...',
               desc : 'Something about my topic',
               img : 'https://discut.io/default.png',
               category : '-',
           },
           item: {
-              title : 'I want a start discussion about...',
+              title : 'Your title, not longer than 256 chars...',
               desc : 'Something about my topic',
               price : '21.37',
               img : 'https://discut.io/default.png',
@@ -288,7 +316,9 @@ export default {
               'Catalan',
               'Arabic',
               'Swedish',
-          ]
+          ],
+            type: "discussion",
+            choices: [{title: '', desc: ''}]
         }
       },
       watch: {
@@ -341,6 +371,11 @@ export default {
         {
           let errors = [];
 
+            if(this.type === "poll" && this.choices.length <= 1)
+            {
+                errors.push("Poll have to more than 1 choice");
+            }
+
             if($(".ProseMirror > p").hasClass("is-empty"))
             {
                 errors.push("You have to type description");
@@ -353,17 +388,17 @@ export default {
               errors.push("Try again for a 5 seconds");
           }
 
-          if(this.item.title == this.default.title)
+          if(this.item.title === this.default.title)
           {
               errors.push("You have to type title");
           }
 
-          if(this.item.title.length > 254)
+          if(this.item.title.length > 255)
           {
-              errors.push("Limit for title: 254 chars");
+              errors.push("Limit for title: 256 chars");
           }
 
-          if(this.item.img == this.default.img)
+          if(!this.item.img)
           {
              errors.push("You have to insert image");
           }else{
@@ -373,11 +408,6 @@ export default {
           if(this.item.category == this.default.category || this.item.category == "")
           {
              errors.push("You have to choose category");
-          }
-
-          if(this.item.lang)
-          {
-
           }
 
           if(errors.length>0)
@@ -401,27 +431,55 @@ export default {
           perm = perm.replace(/ /g, '-').toLowerCase().replace(/[^a-z\-]/g,'');
 
           let author = this.$store.state.user.name;
-          let body = "<html><h1>Background</h1>"+desc+" <br/><br/> <center><img src='"+this.item.img+"'><br/><br/><a href='https://discut.io/topic/@"+author+"/"+perm+"'>View discussion on Discut.io</a></center></html>";
+
+          let extraData = "";
+            let type = 0;
+
+            switch(this.type)
+            {
+                case "discussion":
+                    type = 1;
+                    extraData = "<br/>";
+                    break;
+                case "poll":
+                    type = 2;
+                    extraData += "<blockquote>"+this.item.title+"</blockquote><hr>";
+                    $.each(this.choices, function(i, v) {
+                       extraData += "<ul><li><h5>"+v.title+"</h5><p>"+v.desc+"</p></li></ul><hr>";
+                    });
+                    break;
+            }
+
+          let body =
+              "<html><h1>Background</h1>"+desc+" <br/><center><img src='"+this.item.img+"'><a href='"+this.item.img+"'>Image source</a></center><br/><br/>"+extraData+"<center><a href='https://discut.io/"+(this.type==='discussion' ? 'topic' : 'poll')+"/@"+author+"/"+perm+"'>View "+this.type+" on Discut.io</a></center></html>";
           let category = this.item.category.charAt(0).toLowerCase() + this.item.category.slice(1);
           let lang = this.item.lang.charAt(0).toLowerCase() + this.item.lang.slice(1);
+          let tags = [
+              'discutio',
+              category,
+              'discutio-' + category,
+              'discutio-' + lang,
+              'discutio-' + this.type
+          ];
 
           let meta = {
-              'title': this.item.title,
-              'description': desc,
-              'type': 1,
-              'language': 'discutio-' + lang,
-              'category': 'discutio-' + category,
-              'userImg': this.$store.state.user.avatar,
-              'imgs': {'thumb': '','header': '','big': ''},
-              'tags': [
-                'discutio',
-                category,
-                'discutio-' + category,
-                'discutio-' + lang,
-              ],
-             'image':[this.item.img],
-             'app':"discutio/0.3",
+              title: this.item.title,
+              description: desc,
+              type: type,
+              contentType: this.type,
+              language: 'discutio-' + lang,
+              category: 'discutio-' + category,
+              userImg: this.$store.state.user.avatar,
+              imgs: {'thumb': '','header': '','big': ''},
+              tags: tags,
+              image:[this.item.img],
+              app:"discutio/0.4",
           };
+
+          if(type === 2)
+          {
+              meta.choices = this.choices;
+          }
 
           let data = {
             operations:
@@ -472,13 +530,9 @@ export default {
             }
           }).then((response) =>
           {
-            this.$store.state.api.vote(author, author, perm, this.$store.state.voteWeight*100, (err, res) =>
-            {
               this.$snotify.success('Your discussion has been created', 'Success!');
               this.busy = false;
-              this.$router.push('/topic/'+author+'/'+perm);
-            });
-
+              this.$router.push('/'+(this.type==='discussion' ? 'topic' : 'poll')+'/'+author+'/'+perm);
           }).catch((error) => {
             if(error)
             {
@@ -589,4 +643,64 @@ export default {
         background: rgba(0,0,0,0);
         color: #fff;
     }
+
+    $darkNavy: #1e4603;
+    $teal1: #409805;
+    $teal2: #409805;
+    $charcoal: #555555;
+    $gold: #B6985A;
+
+    $activeShadow: 0 0 10px rgba($teal1, .5);
+
+    @mixin focusOutline {outline: dotted 1px #CCC; outline-offset: .45rem;}
+    @mixin hideInput {width: 0; height: 0; position: absolute; left: -9999px;}
+    @mixin breakpoint($point) {
+        @if $point == 1100 {
+            @media (max-width: 1100px) { @content ; }
+        }
+        @else if $point == 800 {
+            @media (max-width: 800px) { @content ; }
+        }
+    }
+
+    .toggle {
+        margin: 0 0 1.5rem; box-sizing: border-box;
+        font-size: 0;
+        display: flex; flex-flow: row nowrap;
+        justify-content: flex-start; align-items: stretch;
+        input {@include hideInput;}
+        input + label {
+            margin: 0; padding: .75rem 2rem; box-sizing: border-box;
+            position: relative; display: inline-block;
+            border: solid 1px #DDD; background-color: #FFF;
+            font-size: 1rem; line-height: 140%; font-weight: 600; text-align: center;
+            box-shadow: 0 0 0 rgba(255,255,255,0);
+            transition: 	border-color .15s ease-out,
+            color .25s ease-out,
+            background-color .15s ease-out,
+            box-shadow .15s ease-out;
+            width: 50%;
+            &:first-of-type {border-radius: 6px 0 0 6px; border-right: none;}
+            &:last-of-type {border-radius: 0 6px 6px 0; border-left: none;}
+        }
+        input:hover + label {border-color: $darkNavy;}
+        input:checked + label {
+            background-color: $teal2;
+            color: #FFF;
+            box-shadow: $activeShadow;
+            border-color: $teal2;
+            z-index: 1;
+            width: 50%;
+        }
+        input:focus + label {}
+
+        @include breakpoint(800) {
+            input + label {
+                padding: .75rem .25rem;
+                flex: 0 0 50%;
+                display: flex; justify-content: center; align-items: center;
+            }
+        }
+    }
+
 </style>

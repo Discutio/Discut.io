@@ -38,6 +38,11 @@ export default new Router({
       name: 'discussion', 
       component: () => import('./views/Discussion.vue')
     },
+      {
+          path: '/poll/:user/:slug',
+          name: 'poll',
+          component: () => import('./views/Poll2.vue')
+      },
     {
       path: '/tag/:tag',
       name: 'tag', 

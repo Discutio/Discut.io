@@ -29,9 +29,8 @@
                       <i class="fa fa-search"></i>
                     </router-link> 
                   </li>
-                  <li class="nav-item" v-if="$store.getters.isTopic" style="padding-top: 2px;">
-                    <span class="topic-name">
-                        {{$store.getters.getTopicName}}
+                  <li class="nav-item" v-if="$store.getters.getTopicName" style="padding-top: 2px;">
+                    <span class="topic-name" v-html="$store.getters.getTopicName">
                     </span>
                   </li>
                 </ul>
@@ -39,7 +38,7 @@
                   <li>
                     <router-link class="right-btn clear" :to="{ name: 'add' }">
                       <i class="fa fa-plus"></i>
-                      Add discussion
+                      Add
                     </router-link> 
                   </li> 
                   <li>  
@@ -273,6 +272,10 @@
       color: #fff !important;
       border-color: #fff !important;
     }
+    .topic-name {
+      border-color:  #fff !important;
+      color: #fff !important;
+    }
   }
   .topic-name {
     color: #fff;
@@ -282,6 +285,16 @@
     text-transform: uppercase;
     font-size: 11px;
     letter-spacing: 2px;
+    .pill {
+      border-radius: 40px;
+      border: 1px solid #fff;
+      padding: 0 8px 0 8px;
+      text-transform: none;
+      margin-left: 10px;
+      i {
+        font-size: 11px;
+      }
+    }
   }
 
 .navbar-brand {
@@ -322,11 +335,14 @@
       transition: all .2s; 
       border-bottom: 1px solid #eee;
 
-      .nav-link {
+      .nav-link, .topic-name {
         color: #616770;
         &:hover {
           color: #333;
         }
+      }
+      .topic-name {
+        border-color:  #616770;
       }
       .nav-item.active > a {
         color: #333 !important;
@@ -344,7 +360,7 @@
       }
       .right-btn.clear {
         color: #616770;
-        border-color: #616770 !important;
+        border-color: #616770;
       }
 
     }
@@ -541,7 +557,7 @@
   border: 1px solid;
   border-radius: 16px;
   color: #fff;
-  margin-right: 2px;
+  margin-right: 7px;
   -webkit-transition: 0.15s;
   transition: 0.15s;
   &.white {

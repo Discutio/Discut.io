@@ -6,9 +6,9 @@
                 <p>{{tip}}</p> 
                 <h1>{{mostPopularDiscussion.title}}</h1>
                 <div class="action"> 
-                  <router-link :to="{ name: 'discussion', params: {user: mostPopularDiscussion.by, slug: mostPopularDiscussion.slug } }" class="btn btn-discutio-blue">
+                  <router-link :to="{ name: (mostPopularDiscussion.type === 1 ? 'discussion' : 'poll'), params: {user: mostPopularDiscussion.by, slug: mostPopularDiscussion.slug } }" class="btn btn-discutio-blue">
                     Open discussion
-                  </router-link> 
+                  </router-link>
                 </div>
                 <div class="created">
              
@@ -56,10 +56,16 @@
                             <div class="self">
                               <router-link class="tag" :to="{ name: 'tag', params: {tag: item.category } }">
                                 {{item.category}}
-                              </router-link>    
+                              </router-link>
+                                <a href="#" class="tag" v-if="item.type === 2"
+                                   title="Poll"><i class="far fa-chart-bar"></i>
+                                </a>
                             </div>
                             <div class="action"> 
-                              <router-link :to="{ name: 'discussion', params: {user: item.by, slug: item.slug } }">
+                              <router-link :to="{ name: (item.type === 1 ? 'discussion' : 'poll'), params: {user:
+                              item.by,
+                              slug: item.slug }
+                                }">
                                 <h2>{{item.title}}</h2>
                               </router-link>    
                             </div>  
@@ -139,6 +145,7 @@ export default {
               {
                 this.mostPopularDiscussion = {
                   'title' : v.json_metadata.title,
+                    'type' : v.json_metadata.type,
                   'desc' : '',
                   'by' : v.author,
                   'price' : parseFloat(v.pending_payout_value.split(" ")[0]).toFixed(2),
@@ -157,6 +164,7 @@ export default {
               this.discussions.push({
                   'title' : v.json_metadata.title,
                   'desc' : '',
+                  'type' : v.json_metadata.type,
                   'by' : v.author,
                   'price' : parseFloat(v.pending_payout_value.split(" ")[0]).toFixed(2),
                   'img' : (typeof v.json_metadata.image == "undefined" ? "" : v.json_metadata.image[0]),
@@ -166,64 +174,14 @@ export default {
               });
             });
 
-          if(result.length < 24)
-          {
-            let limit = 24 - result.length;
- 
-            steem.api.getDiscussionsByBlog({tag: "discutio", limit: limit}, (err, result) =>
-            {
-              $.each(result, (i, v) => 
-              {     
-                v.json_metadata = JSON.parse(v.json_metadata);
-
-                if(typeof v.json_metadata.type == "undefined")
-                {
-                  return true;
-                }
-
-                if(firstLoad)
-                {
-                  this.mostPopularDiscussion = {
-                    'title' : v.json_metadata.title,
-                    'desc' : '',
-                    'by' : v.author,
-                    'price' : parseFloat(v.pending_payout_value.split(" ")[0]).toFixed(2),
-                    'img' : (typeof v.json_metadata.image == "undefined" ? "" : v.json_metadata.image[0]),
-                    'category' : (v.json_metadata.category.split("-")[1]),
-                    'avatar' : v.json_metadata.userImg, 
-                    'slug' : v.permlink        
-                  }
-                  
-                  console.log(this.mostPopularDiscussion);
-                  
-                  firstLoad = false;
-                  return true;
-                }
-
-                this.discussions.push({
-                    'title' : v.json_metadata.title,
-                    'desc' : '',
-                    'by' : v.author,
-                    'price' : parseFloat(v.pending_payout_value.split(" ")[0]).toFixed(2),
-                    'img' : (typeof v.json_metadata.image == "undefined" ? "" : v.json_metadata.image[0]),
-                    'category' : (v.json_metadata.category.split("-")[1]),
-                    'avatar' : v.json_metadata.userImg, 
-                    'slug' : v.permlink
-                });
-              });
-
-              this.busy = false;
-            });        
-          }else{
             this.busy = false;
-          }
         }
       }
     }
   },
   mounted()
   {
-      this.$store.dispatch('setTopicMode', {mode: false, name: ""});
+      this.$store.dispatch('setTopicMode', {mode: false, name: "Happy New Year! 🎇🎆🔥"});
       $(".navbar").removeClass("img-header");
       $(".navbar").removeClass('navbar-active');
 
@@ -236,7 +194,7 @@ export default {
 
     this.tip = items[Math.floor(Math.random()*items.length)];
 
-    this.loadContent('trending', true);
+    this.loadContent('new', true);
   }
 }
 </script>

@@ -41,7 +41,8 @@ export default new Vuex.Store({
       isTopic: false,
       topicName: "",
       topicImg: "",
-      isMenuActive: false
+      isMenuActive: false,
+      steemDollarPrice: 0.0
   },
   mutations:   
   { 
@@ -49,10 +50,10 @@ export default new Vuex.Store({
       {
         axios({
           method: 'get',
-          url: 'https://api.coinmarketcap.com/v1/ticker/STEEM/'
+          url: 'https://api.coinmarketcap.com/v1/ticker/steem-dollars/'
         }).then((response) =>
         {
-          state.steemRate = state;
+          state.steemDollarPrice = state.price_usd;
         });
 
         steem.api.getRewardFund("post", (err, result) => {
@@ -165,6 +166,9 @@ export default new Vuex.Store({
         },
         isMenuActive: state => {
             return state.isMenuActive;
+        },
+        getSteemDollarPrice: state => {
+            return state.steemDollarPrice;
         }
     }
 

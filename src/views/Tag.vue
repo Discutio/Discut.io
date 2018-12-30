@@ -36,14 +36,20 @@
                           <div class="self-img"  :style="{ backgroundImage: 'url(' + item.img + ')' }">
                             <div class="shadow-inset"></div>
                             <div class="self">
-                              <router-link class="tag" :to="{ name: 'tag', params: {tag: item.category } }">
-                                {{item.category}}
-                              </router-link>    
+                                <router-link class="tag" :to="{ name: 'tag', params: {tag: item.category } }">
+                                    {{item.category}}
+                                </router-link>
+                                <a href="#" class="tag" v-if="item.type === 2"
+                                   title="Poll"><i class="far fa-chart-bar"></i>
+                                </a>
                             </div>
-                            <div class="action"> 
-                              <router-link :to="{ name: 'discussion', params: {user: item.by, slug: item.slug } }">
-                                <h2>{{item.title}}</h2>
-                              </router-link>    
+                            <div class="action">
+                                <router-link :to="{ name: (item.type === 1 ? 'discussion' : 'poll'), params: {user:
+                              item.by,
+                              slug: item.slug }
+                                }">
+                                    <h2>{{item.title}}</h2>
+                                </router-link>
                             </div>  
                           </div>
                           <div class="desc"> 
@@ -127,7 +133,8 @@ export default {
                 'price' : parseFloat(v.pending_payout_value.split(" ")[0]).toFixed(2),
                 'img' : (typeof v.json_metadata.image == "undefined" ? "" : v.json_metadata.image[0]),
                 'category' : (v.json_metadata.category.split("-")[1]),
-                'avatar' : v.json_metadata.userImg, 
+                'avatar' : v.json_metadata.userImg,
+                'type' : v.json_metadata.type,
                 'slug' : v.permlink
             });
           });
