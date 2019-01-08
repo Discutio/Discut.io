@@ -336,6 +336,7 @@
     padding: 20px 25px 20px 25px;
     border: 1px solid #ddd;
     opacity: 0.8;
+    position: relative;
     &.first {
       border-color: rgba(217,164,65, 0.6);
       .comment-title strong {
@@ -463,6 +464,17 @@
         color: #616770;
         &:hover {
           text-decoration: none;
+        }
+      }
+      .single-option {
+        margin-left: 12px;
+        cursor: pointer;
+        i {
+          color:#a9b0b8;
+          font-size: 11px;
+        }
+        &:last-child {
+          margin-right: 0;
         }
       }
       img {
@@ -597,6 +609,7 @@
   width:100%;
   div {
     background-color:#616770;
+    border-right: 1px solid #fff;
     height:20px;
     float:left;
     color: #fff;
@@ -605,12 +618,15 @@
     padding-top: 2px;
     &.first {
       background-color: rgba(217,164,65, 1);
+      border-right-width: 0px;
     }
     &.second {
       background-color: rgba(168,168,168, 1);
+      border-right-width: 0px;
     }
     &.third {
       background-color: rgba(150,90,56, 1);
+      border-right-width: 0px;
     }
   }
   div:first-child{
@@ -618,6 +634,7 @@
     border-bottom-left-radius: 40px;
   }
   div:last-child{
+    border-right-width: 0px;
     border-top-right-radius: 40px;
     border-bottom-right-radius: 40px;
   }

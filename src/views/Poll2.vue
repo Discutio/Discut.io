@@ -310,6 +310,10 @@
 
 		                                                <span class="reward">${{item.reward}}</span>
 		                                            </span>
+													<span class="single-option" @click="editComment(item)"
+													      v-if="$store.state.user && item.author === $store.state.user.name">
+		                                                 <i class="fas fa-pencil-alt"></i>
+		                                            </span>
 													<div class="pull-right">
 														<a :href="'https://steemit.com/@' + item.author" target="_blank" title="Show profile">
 															<img :src="item.avatar">
@@ -388,6 +392,10 @@
 		                                                    }">
 		                                                </i>
 		                                                <span class="reward">${{item.reward}}</span>
+		                                            </span>
+													<span class="single-option" @click="editComment(item)"
+															      v-if="$store.state.user && item.author === $store.state.user.name">
+		                                                 <i class="fas fa-pencil-alt"></i>
 		                                            </span>
 													<div class="pull-right">
 														<a :href="'https://steemit.com/@' + item.author" target="_blank" title="Show profile">
@@ -483,12 +491,20 @@
 				</div>
 			</div>
 		</div>
-		<modal name="add-pros-or-cons">
+		<modal name="add-pros-or-cons" @before-open="beforeOpen">
 			<div class="add">
-				<div class="type">
+				<div class="type" v-if="'new' === commentEditor.mode">
 					<h2>You're adding
-						<span @click="('pros' === add.type? add.type = 'cons' : add.type = 'pros')" :class="{'cons': 'cons' === add.type, 'pros': 'pros' === add.type}"> {{('cons' === add.type ? 'Cons' : 'Pros')}} <i class="fas fa-sync"></i>
+						<span @click="('pros' === add.type? add.type = 'cons' : add.type = 'pros')" :class="{'cons': 'cons' === add.type, 'pros': 'pros' === add.type}"> {{('cons' === add.type ? 'Con' : 'Pro')}} <i class="fas fa-sync"></i>
                    </span>
+					    as <img v-if="$store.state.user.avatar" :src="$store.state.user.avatar" width=20 class="rounded-circle"/>
+					    {{$store.state.user.user}}
+					</h2>
+				</div>
+				<div class="type" v-if="'edit' === commentEditor.mode">
+					<h2>You're editing your <span :class="{'cons': 'cons' === add.type, 'pros': 'pros' === add.type}">
+                    {{('cons' === add.type ? 'Con' : 'Pro')}}
+                    </span>
 					    as <img v-if="$store.state.user.avatar" :src="$store.state.user.avatar" width=20 class="rounded-circle"/>
 					    {{$store.state.user.user}}
 					</h2>
@@ -573,8 +589,8 @@
 					</div>
 				</div>
 				<div class="submit">
-					<button v-if="!busy" @click="addComment" class="btn btn-confirm">
-						Add
+					<button v-if="!busy" @click="saveComment" class="btn btn-confirm">
+						Save
 					</button>
 					<button v-else-if="busy" class="btn btn-confirm">
 						<div class="lds-ring"><div></div><div></div><div></div><div></div></div>
@@ -666,30 +682,7 @@
 	            type: 'poll',
                 linkUrl: null,
                 linkMenuIsActive: false,
-                editor: new Editor({
-                    extensions: [
-                        new Blockquote(),
-                        new BulletList(),
-                        new CodeBlock(),
-                        new HardBreak(),
-                        new Heading({ levels: [1, 2, 3] }),
-                        new ListItem(),
-                        new OrderedList(),
-                        new TodoItem(),
-                        new TodoList(),
-                        new Bold(),
-                        new Code(),
-                        new Italic(),
-                        new Link(),
-                        new Strike(),
-                        new Underline(),
-                        new History(),
-                        new Placeholder({
-                            emptyClass: 'is-empty',
-                            emptyNodeText: 'Write something…',
-                        }),
-                    ],
-                }),
+                editor: null,
 
 	            state: {},
 	            problem: {},
@@ -725,7 +718,11 @@
                     type: '',
                     desc: ''
                 },
-                refreshTimer: ""
+                refreshTimer: "",
+                commentEditor: {
+                    mode: 'new',
+                    permlink: ''
+                },
             }
         },
         watch: {},
@@ -736,17 +733,56 @@
             EditorMenuBubble,
         },
         methods: {
+            beforeOpen (event) {
+                this.commentEditor = event.params;
+            },
             addPros: function()
             {
+                this.createEditor();
                 this.add.type = 'pros';
-                this.$modal.show('add-pros-or-cons');
+                this.$modal.show('add-pros-or-cons', {mode: 'new', permlink: ''});
             },
             addCons: function()
             {
+                this.createEditor();
                 this.add.type = 'cons';
-                this.$modal.show('add-pros-or-cons');
+                this.$modal.show('add-pros-or-cons', {mode: 'new', permlink: ''});
             },
-            addComment: function()
+            editComment: function(item)
+            {
+                this.createEditor(item.desc);
+                this.add.type = item.type;
+                this.$modal.show('add-pros-or-cons', {mode: 'edit', permlink: item.permlink});
+            },
+            createEditor: function(desc = "")
+            {
+                this.editor = new Editor({
+                    extensions: [
+                        new Blockquote(),
+                        new BulletList(),
+                        new CodeBlock(),
+                        new HardBreak(),
+                        new Heading({ levels: [1, 2, 3] }),
+                        new ListItem(),
+                        new OrderedList(),
+                        new TodoItem(),
+                        new TodoList(),
+                        new Bold(),
+                        new Code(),
+                        new Italic(),
+                        new Link(),
+                        new Strike(),
+                        new Underline(),
+                        new History(),
+                        new Placeholder({
+                            emptyClass: 'is-empty',
+                            emptyNodeText: 'Write something…',
+                        }),
+                    ],
+                    content: desc
+                })
+            },
+            saveComment: function()
             {
                 let errors = [];
 
@@ -782,12 +818,20 @@
                 };
 
                 let author = this.$store.state.user.name;
-                let perm = Math.random().toString(36).substring(2);
                 let systemType = this.currentItem.systemType;
+
+                let perm = "";
+
+                if(this.commentEditor.mode === "new")
+                {
+                    perm = Math.random().toString(36).substring(2);
+                }else{
+                    perm = this.commentEditor.permlink;
+                }
 
                 let data = {
                     operations:
-                        [
+	                    [
                             [
                                 "comment",
                                 {
@@ -800,30 +844,36 @@
                                     permlink: perm,
                                     title: this.add.type + ": " + this.currentPollElement.title
                                 }
-                            ],
-                            [
-                                "comment_options",
-                                {
-                                    allow_curation_rewards: true,
-                                    allow_votes: true,
-                                    author: author,
-                                    max_accepted_payout: "1000000.000 SBD",
-                                    percent_steem_dollars: 10000,
-                                    permlink: perm,
-                                    extensions: [
-                                        [
-                                            0,
-                                            {
-                                                beneficiaries: [
-                                                    {account: "discutio", weight: 1000}
-                                                ]
-                                            }
-                                        ]
-                                    ]
-                                }
                             ]
                         ]
                 };
+
+                if(this.commentEditor.mode === "new")
+                {
+                    data.operations.push(
+                        [
+	                        "comment_options",
+	                        {
+	                            allow_curation_rewards: true,
+	                            allow_votes: true,
+	                            author: author,
+	                            max_accepted_payout: "1000000.000 SBD",
+	                            percent_steem_dollars: 10000,
+	                            permlink: perm,
+	                            extensions: [
+	                                [
+	                                    0,
+	                                    {
+	                                        beneficiaries: [
+	                                            {account: "discutio", weight: 1000}
+	                                        ]
+	                                    }
+	                                ]
+	                            ]
+	                        }
+	                    ]
+                    )
+                }
 
                 axios({
                     method: 'post',
@@ -835,11 +885,23 @@
                     }
                 }).then((response) =>
                 {
-                    this.reloadComments();
+                    if(this.commentEditor.mode === "new")
+                    {
+                        this.reloadComments();
+                    }else{
+                        $.each(this.currentComments, (i, v) => {
+                            if(v.permlink == this.commentEditor.permlink)
+                            {
+                                v.desc = meta.desc;
+                                v.json_metadata.desc = meta.desc;
+                                return false;
+                            }
+                        })
+                    }
 
                     this.busy = false;
 
-                    this.$snotify.success('Comment added', 'Success!');
+                    this.$snotify.success('Comment has been '+(this.commentEditor.mode === "new" ? 'added' : 'edited'), 'Success!');
                     this.$modal.hide('add-pros-or-cons');
 
                 }).catch((error) => {

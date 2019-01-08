@@ -102,6 +102,13 @@
                   <div class="form-group" v-if="type === 'poll'">
                       <label><i class="far fa-chart-bar"></i> Options</label>
                       <div v-for="(item, index) in choices" style="margin-bottom: 20px;">
+                          <h6>
+                              {{(index+1)+'. option'}}:
+                              <i class="fa fa-times" v-if="index>1"
+                                 @click="choices.splice(index, 1)"
+                                 style="float:right;cursor:pointer;">
+                              </i>
+                          </h6>
                           <input type="text" class="form-control" v-model="item.title"
                                  :placeholder="(index+1)+'. option'">
                           <textarea style="margin-top: 10px;" v-model="item.desc" class="form-control"
@@ -318,7 +325,7 @@ export default {
               'Swedish',
           ],
             type: "discussion",
-            choices: [{title: '', desc: ''}]
+            choices: [{title: '', desc: ''},{title: '', desc: ''}],
         }
       },
       watch: {
@@ -370,6 +377,21 @@ export default {
         insertDiscussion: function()
         {
           let errors = [];
+
+            if(this.type === "poll" && this.choices.length <= 1)
+            {
+                errors.push("Poll have to more than 1 choice");
+            }
+
+            if(this.type === "poll")
+            {
+                $.each(this.choices, function(i, v) {
+                    if(v.title.length < 2) {
+                        errors.push("Option number " + (i+1) + " has wrong title. Min. 3 chars.");
+                        return false;
+                    }
+                });
+            }
 
             if(this.type === "poll" && this.choices.length <= 1)
             {
@@ -451,7 +473,7 @@ export default {
             }
 
           let body =
-              "<html><h1>Background</h1>"+desc+" <br/><center><img src='"+this.item.img+"'><a href='"+this.item.img+"'>Image source</a></center><br/><br/>"+extraData+"<center><a href='https://discut.io/"+(this.type==='discussion' ? 'topic' : 'poll')+"/@"+author+"/"+perm+"'>View "+this.type+" on Discut.io</a></center></html>";
+              "<html>"+desc+" <br/><center><img src='"+this.item.img+"'><a href='"+this.item.img+"'>Image source</a></center><br/><br/>"+extraData+"<center><a href='https://discut.io/"+(this.type==='discussion' ? 'topic' : 'poll')+"/@"+author+"/"+perm+"'>View "+this.type+" on Discut.io</a></center></html>";
           let category = this.item.category.charAt(0).toLowerCase() + this.item.category.slice(1);
           let lang = this.item.lang.charAt(0).toLowerCase() + this.item.lang.slice(1);
           let tags = [

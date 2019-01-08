@@ -181,7 +181,7 @@ export default {
   },
   mounted()
   {
-      this.$store.dispatch('setTopicMode', {mode: false, name: "Happy New Year! 🎇🎆🔥"});
+      this.$store.dispatch('setTopicMode', {mode: false, name: ""});
       $(".navbar").removeClass("img-header");
       $(".navbar").removeClass('navbar-active');
 

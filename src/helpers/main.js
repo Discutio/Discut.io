@@ -49,7 +49,8 @@ export default {
                     systemType: "commentElement",
                     systemReplies: [],
                     repliesPros: 0,
-                    repliesCons: 0
+                    repliesCons: 0,
+                    desc: obj.desc
                 };
 
                 if(comments[i].reward > bestReward)

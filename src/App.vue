@@ -7,7 +7,7 @@
             :class="{'img-header': $store.getters.isTopic, 'navbar-active' : $store.getters.isMenuActive}"
                  :style="{backgroundImage: 'url('+$store.getters.getTopicImg+')'}">
               <router-link class="navbar-brand" :to="{ name: 'home' }">
-                <img src="/lw.png" width=40 />
+                <img src="/logo.png" width=40 />
               </router-link>  <span class="beta">BETA</span>
               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
